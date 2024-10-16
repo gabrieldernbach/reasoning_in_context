@@ -1,3 +1,5 @@
+# Concept
+
 Many real-world systems can be represented as probabilistic equations organised in a directed acyclic graph (DAG). These systems, where the data generating process is modelled by ancestral sampling, are causal in nature and have been extensively studied in the causal effect estimation literature.
 
 Intervening in such systems to achieve desirable states requires more than fitting a generative model from observational data. While generative models reveal which states are more or less likely, they do not provide information about how the system will respond to interventions. To predict these responses, it is necessary to estimate the system's Jacobian, which encodes the sensitivity of outputs to changes in inputs.
