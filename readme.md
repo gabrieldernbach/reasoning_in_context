@@ -1,11 +1,9 @@
-A large number of real-world systems can be represented as a set of probabilistic equations structured in a directed acyclic graph.
-Since the data-generating process can be realized by ancestral sampling, these systems can be considered causal and have been widely studied in the causal effect estimation literature.
+Many real-world systems can be represented as probabilistic equations organised in a directed acyclic graph (DAG). These systems, where the data generating process is modelled by ancestral sampling, are causal in nature and have been extensively studied in the causal effect estimation literature.
 
-To guide a given system toward realizing desirable states, we seek to fit a model from observational data to plan appropriate interventions.
-While fitting a generative model to observational data can tell us which states are more or less likely, it doesn't tell us how the system will respond to intervention.
-We need to derive an estimator of the system's Jacobian, as it encodes the differential changes in input/output we should expect.
+Intervening in such systems to achieve desirable states requires more than fitting a generative model from observational data. While generative models reveal which states are more or less likely, they do not provide information about how the system will respond to interventions. To predict these responses, it is necessary to estimate the system's Jacobian, which encodes the sensitivity of outputs to changes in inputs.
 
-While there is a large body of work on the identifiability of the casual structure with specific algorithms, we ask whether it is possible for a model to
-learn to identify the Jacobian in context (not in weight) and internally implement the necessary algorithm (in its weights).
+Recent advances in in-context learning have demonstrated the ability of a model to perform tasks such as regression and classification without updating its weights. The model adapts dynamically to the task using only the information provided by the input context. Extending this concept to the Jacobian, we propose that a model could learn to estimate the Jacobian in context, allowing it to infer the effects of interventions without relying on pre-programmed algorithms.
 
-The following experiments aim to present such a task.
+Our hypothesis is that in-context learning, already proven in prediction tasks, can be used for intervention planning. By dynamically learning the Jacobian, the model can internally implement reasoning about system responses to change. This approach represents a shift from explicitly identifying causal structures through algorithms to training models to reason about causality as part of their learned context.
+
+The experiments presented here are designed to test the feasibility of this approach.
