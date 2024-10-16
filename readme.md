@@ -1,42 +1,42 @@
 # Concept
 
-Many real-world systems can be represented as probabilistic equations organised in a directed acyclic graph (DAG). These systems, where the data generating process is modelled by ancestral sampling, are causal in nature and have been extensively studied in the causal effect estimation literature.
+Many real-world systems can be represented as a set of probabilistic equations structured in a directed acyclic graph (DAG). The nodes are the equations that state how variables are computed locally, while the edges indicate, how variables are connected. These systems, where the data-generating process can be modeled by ancestral sampling, are causal by nature and have been extensively studied in the causal effect estimation literature.
 
-Intervening in such systems to achieve desirable states requires more than fitting a generative model from observational data. While generative models reveal which states are more or less likely, they do not provide information about how the system will respond to interventions. To predict these responses, it is necessary to estimate the system's Jacobian, which encodes the sensitivity of outputs to changes in inputs.
+Deriving targeted interventions in such systems to achieve desirable states requires more than fitting a generative model from observational data. While generative models reveal which states are more or less likely, they do not provide information about how the system will respond to interventions. To predict these responses, it is necessary to estimate the system's Jacobian, which encodes the sensitivity of outputs to changes in inputs.
 
-Recent advances in in-context learning have demonstrated the ability of a model to perform tasks such as regression and classification without updating its weights. The model adapts dynamically to the task using only the information provided by the input context. Extending this concept to the Jacobian, we propose that a model could learn to estimate the Jacobian in context, allowing it to infer the effects of interventions without relying on pre-programmed algorithms.
+Recent advances in in-context learning have demonstrated the ability of ML models to perform tasks such as regression and classification without updating its weights. The model adapts dynamically to the task using only the information provided by the input context. Extending this concept to the Jacobian, we propose that a model could learn to estimate the Jacobian in context, allowing it to infer the effects of interventions without relying on pre-programmed algorithms.
 
-Our hypothesis is that in-context learning, already proven in prediction tasks, can be used for intervention planning. By dynamically learning the Jacobian, the model can internally implement reasoning about system responses to change. This approach represents a shift from explicitly identifying causal structures through algorithms to training models to reason about causality as part of their learned context.
+We hypothesize that in-context learning, already proven in prediction tasks, can be used for intervention planning. By dynamically learning the Jacobian, the model can internally implement reasoning about system responses to change. This approach represents a shift from manually identifying causal structures on a case-by-case basis to training models to reason about causal relationships as they arrive.
 
 The experiments presented here are designed to test the feasibility of this approach.
 
-
 ## Problem statement and practical approach
-In this experiment, we want to test whether a model can learn to predict how a system responds to interventions by processing only observational data in context. While the model sees no intervention during its input phase, the supervisory signal during training includes the results of interventions, which guides the model in learning the causal structure of the system. The hypothesis is that the model can infer the Jacobian of the system through in-context learning, using both observational data and feedback from intervention outcomes.
+In this experiment, we want to test whether a model can learn to predict how a system responds to interventions by processing only observational data of a given context. While the model sees no interventional data at its input, the supervision signal during training includes the results of intervening on the last input sample, which guides the model in learning the causal structure of the system. The hypothesis is that the model can infer the Jacobian of the system through in-context learning, using both observational data and feedback from interventional outcomes.
 
 ## Data generation (DAG construction and sampling)
-We repeatedly sample systems as Directed Acyclic Graph (DAG), where each node represents a variable and the edges represent probabilistic causal relationships between them. The graph is sampled with edge drop probabilities, ensuring that the links between variables are non-trivial and variable across samples.
+We repeatedly sample systems (DAGs), where each node represents a variable and the edges represent probabilistic causal relationships between them. The graph is sampled with edge drop probabilities, and shuffling of the topological order, ensuring that the links between variables are non-trivial and variable across contexts.
 
-For each sample:
+For each context we sample:
 * Observation data (X): These are taken from the system without any intervention. This is the only input the model sees during training.
-* Intervention (I) and outcome (Y): A random intervention is applied to a node in the very last observed sample and the response of the system to this counter factual sample is captured in the outcome (Y). This data is not provided as input to the model, but serves as a target in the training loss, guiding the model as it learns the dynamics of the system generating the in-context samples.
+* Intervention (I): A random intervention is applied to a node in the very last observed sample. (I) indicates the amount of perturbation applied.
+* Outcome (Y): The response of the system to the intervention on the last sample is captured in the outcome (Y). This data is not provided as input to the model, but serves as a target in the training loss, guiding the model as it learns the dynamics of the system generating the in-context samples.
 
-The key challenge is that the model must learn the relationships between variables and generalise its understanding to predict the effect of interventions using only the observational data for context.
+The key challenge is that the model must learn the relationships between variables and generalize their functional link to predict the effect of interventions using only the observational data for context.
 
 ## Model Architecture (Transformer for In-Context Learning)
 
-The architecture is a transformer-based model that processes sequences of observational data. Transformers are chosen for their ability to learn dependencies and relationships within sequences, making them well suited to in-context learning tasks where patterns emerge from the input data.
+The architecture is a transformer-based model that processes sequences of observational data.
 
 Key components:
 
-* Input representation: The model receives the observation data (X) as its only input, with no direct knowledge of the interventions.
+* Input representation: The model receives the observation data (X) and an intervention query (I), indicating the amount of perturbation applied to the last sample.
 * Transformer Backbone: The transformer layers use bidirectional attention mechanisms to capture relationships between variables, allowing the model to infer how changes in one variable might propagate through the system.
-* Prediction Output: The model predicts how the system would respond to an intervention, even though it does not see the intervention in its input. The output (Y) is used as the target for training.
+* Prediction Output: The model predicts how the system would respond to the intervention, even though it does not see any interventions in its input. The outcome (Y) is used as the target for training.
 
 
 ## Loss function and training process
 
-The loss function calculates the difference between the model's predicted outcomes and the actual post-intervention outcomes (Y). This provides the necessary monitoring signal, even though the interventions themselves are not part of the input data. By minimising this loss, the model is encouraged to learn the causal relationships between variables that determine how interventions affect system outcomes.
+The loss function calculates the difference between the model's predicted outcomes and the actual post-intervention outcomes (Y). This provides the necessary signal for identification, even though the intervention pairs themselves are not part of the input data. By minimizing this loss, the model is encouraged to learn the causal relationships between variables that determine how interventions affect system outcomes.
 
 The training process involves
 
@@ -45,10 +45,6 @@ The training process involves
 * Comparing the predictions with actual outcomes (Y) and updating the model accordingly.
 
 Over time, the model should improve in its ability to generalise from observational data to predict system behaviour under unseen interventions.
-
-## Role of mixing and visualisation
-
-Before the data is fed into the model, the variables in the observed data are shuffled. This ensures that the model cannot rely on positional biases and instead must learn the underlying relationships between the variables. The unshuff array is provided not to the model but to the user, allowing the user to restore the variables to their original causal order for visualisation purposes. The model remains unaware of the original ordering throughout training.
 
 ## Hypothesis testing
 
